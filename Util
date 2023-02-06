@@ -1,0 +1,85 @@
+public class MongoUtil {
+
+    //saca todos los datos de la BDD basandose en los nombres de los campos de la tabla y los guarda en un array de tipo Libro
+    public static ArrayList obtenerLibros() {
+        MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+        MongoDatabase database = mongoClient.getDatabase("Biblioteca");
+        MongoCollection<Document> collection = database.getCollection("Llibres");
+
+        MongoCursor<Document> cursor = collection.find().iterator();
+        ArrayList<Libro> listaLibros = new ArrayList<>();
+
+        try {
+            while (cursor.hasNext()) {
+                Document doc = cursor.next();
+                Libro libro = new Libro(doc.getString("Id"), doc.getString("Titol"), doc.getString("Autor"), doc.getString("Any_naixement"), doc.getString("Any_publicacio"), doc.getString("Editorial"), doc.getString("Nombre_pagines"));
+                listaLibros.add(libro);
+            }
+        } finally {
+            mongoClient.close();
+            cursor.close();
+        }
+        return listaLibros;
+    }
+
+    //recibe el libro que se teiene que añadir a la BDD y lo inserta
+    public static boolean crearLibro(Libro l) {
+
+        try {
+            MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+            MongoDatabase database = mongoClient.getDatabase("Biblioteca");
+            MongoCollection<Document> collection = database.getCollection("Llibres");
+
+            Document doc = new Document("Id", l.getId()).append("Titol", l.getTitulo()).append("Autor", l.getAutor()).append("Any_naixement", l.getNacimiento()).append("Any_publicacio", l.getPublicacion()).append("Editorial", l.getEditorial()).append("Nombre_pagines", l.getPaginas());
+
+            collection.insertOne(doc);
+            mongoClient.close();
+
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    //recibe la id del libro que se tiene que borrar y lo borra de la BDD
+    public static boolean borrarLibro(String id) {
+
+        try {
+            MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+            MongoDatabase database = mongoClient.getDatabase("Biblioteca");
+            MongoCollection<Document> collection = database.getCollection("Llibres");
+
+            Bson filter = Filters.eq("Id", id);
+
+            collection.deleteOne(filter);
+            mongoClient.close();
+
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    //recibe la id del que tiene que atualizar y el libro ya con los datos actualizaos actualizado
+    public static boolean actualizarLibro(String id, Libro l) {
+
+        try {
+            MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
+            MongoDatabase database = mongoClient.getDatabase("Biblioteca");
+            MongoCollection<Document> collection = database.getCollection("Llibres");
+
+            BasicDBObject newValues = new BasicDBObject();
+            newValues.append("$set", new BasicDBObject().append("Id", id).append("Titol", l.getTitulo()).append("Autor", l.getAutor()).append("Any_naixement", l.getNacimiento()).append("Any_publicacio", l.getPublicacion()).append("Editorial", l.getEditorial()).append("Nombre_pagines", l.getPaginas()));
+
+            BasicDBObject searchQuery = new BasicDBObject().append("Id", id);//consulta para buscar el libro a actualizar
+
+            collection.updateOne(searchQuery, newValues);
+
+            mongoClient.close();
+
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+}
