@@ -1,6 +1,5 @@
 public class MongoUtil {
 
-    //saca todos los datos de la BDD basandose en los nombres de los campos de la tabla y los guarda en un array de tipo Libro
     public static ArrayList obtenerLibros() {
         MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
         MongoDatabase database = mongoClient.getDatabase("Biblioteca");
@@ -22,7 +21,6 @@ public class MongoUtil {
         return listaLibros;
     }
 
-    //recibe el libro que se teiene que añadir a la BDD y lo inserta
     public static boolean crearLibro(Libro l) {
 
         try {
@@ -41,7 +39,6 @@ public class MongoUtil {
         }
     }
 
-    //recibe la id del libro que se tiene que borrar y lo borra de la BDD
     public static boolean borrarLibro(String id) {
 
         try {
@@ -60,7 +57,6 @@ public class MongoUtil {
         }
     }
 
-    //recibe la id del que tiene que atualizar y el libro ya con los datos actualizaos actualizado
     public static boolean actualizarLibro(String id, Libro l) {
 
         try {
